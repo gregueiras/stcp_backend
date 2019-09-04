@@ -7,24 +7,27 @@ const port = process.env.PORT || 3000;
 const clients: {
   token: String;
   expire: Date;
-  stop: String;
+  stopCode: String;
+  provider: String;
   line: String[];
 }[] = []; // stop is key, value is array of objects with keys token and
 
-app.get("/", (req, res) => {
+app.post("/", (req, res) => {
   console.log(req.query);
 
   if (req.query.token) {
-    const { token, expire = 10, stop, line } = req.query;
+    const { token, expire = 10, stopCode, provider, line } = req.query;
 
     const expirationTime = moment().add(expire, "minutes");
 
     clients.push({
       token,
-      stop,
+      stopCode,
+      provider,
       line,
       expire: expirationTime
     });
+    console.log(clients)
     res.send(JSON.stringify(expirationTime));
     return;
   }
