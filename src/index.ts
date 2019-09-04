@@ -61,6 +61,7 @@ function handleReq(
     console.error("Invalid Token")
   }
 
+  console.log("SENT")
   expo.sendPushNotificationsAsync([message])
   
 }
