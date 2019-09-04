@@ -2,6 +2,8 @@ const express = require("express");
 const moment = require("moment");
 
 const app = express();
+app.use(express.json());
+
 const port = process.env.PORT || 3000;
 
 const clients: {
@@ -15,8 +17,8 @@ const clients: {
 app.post("/", (req, res) => {
   console.log(req.query);
 
-  if (req.query.token) {
-    const { token, expire = 10, stopCode, provider, line } = req.query;
+  if (req.body.token) {
+    const { token, expire = 10, stopCode, provider, line } = req.body;
 
     const expirationTime = moment().add(expire, "minutes");
 
@@ -27,12 +29,12 @@ app.post("/", (req, res) => {
       line,
       expire: expirationTime
     });
-    console.log(clients)
+    console.log(clients);
     res.send(JSON.stringify(expirationTime));
     return;
   }
-  
-  res.send(JSON.stringify(req.query));
+
+  res.send(JSON.stringify(req.body));
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
