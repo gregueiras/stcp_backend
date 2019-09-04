@@ -10,6 +10,8 @@ app.use(express.json());
 const port = process.env.PORT || 3000;
 const interval = 30;
 
+const clients = {}; //token is key, value is intervalID
+
 interface request {
   token: string;
   expire: string;
@@ -17,6 +19,15 @@ interface request {
   provider: string;
   lines: string[];
 }
+
+app.post("/unsubscribe", (req, res) => {
+  const { token } = req.body;
+
+  const intervalID = clients[token];
+
+  clearInterval(intervalID);
+  res.send("SUCCESS");
+});
 
 app.post("/", (req, res) => {
   console.log(req.query);
@@ -42,6 +53,10 @@ app.post("/", (req, res) => {
       () => handleReq(token, stopCode, provider, lines),
       interval * 1000
     );
+
+    if (clients[token]) clients[token] = [...clients[token], intervalID];
+    else clients[token] = intervalID;
+
     setTimeout(() => clearInterval(intervalID), expire * 60 * 1000);
 
     res.send("SUCESS");
