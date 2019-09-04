@@ -1,0 +1,23 @@
+{
+  "name": "stcp_backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/gregueiras/stcp_backend.git",
+  "author": "Gonçalo Santos <gregueiras@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "expo-server-sdk": "^3.3.0",
+    "express": "^4.17.1",
+    "moment": "^2.24.0"
+  },
+  "scripts": {
+    "start": "node build/index.js",
+    "build": "tsc",
+    "postinstall": "yarn build",
+    "go": "yarn build && yarn start"
+  },
+  "devDependencies": {
+    "@types/node": "^12.7.4",
+    "typescript": "^3.6.2"
+  }
+}
