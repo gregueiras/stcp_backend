@@ -1,36 +1,40 @@
 const express = require("express");
-const moment = require("moment");
+import Expo, { ExpoPushMessage } from "expo-server-sdk";
 
+let expo = new Expo();
 const app = express();
+
 app.use(express.json());
 
 const port = process.env.PORT || 3000;
 
-const clients: {
-  token: String;
-  expire: Date;
-  stopCode: String;
-  provider: String;
-  line: String[];
-}[] = []; // stop is key, value is array of objects with keys token and
+interface request {
+  token: string;
+  expire: number;
+  stopCode: string;
+  provider: string;
+  lines: string[];
+}
 
 app.post("/", (req, res) => {
   console.log(req.query);
 
   if (req.body.token) {
-    const { token, expire = 10, stopCode, provider, line } = req.body;
-
-    const expirationTime = moment().add(expire, "minutes");
-
-    clients.push({
+    const {
       token,
+      expire = 10,
       stopCode,
       provider,
-      line,
-      expire: expirationTime
-    });
-    console.log(clients);
-    res.send(JSON.stringify(expirationTime));
+      lines
+    } = req.body as request;
+
+    const intervalID = setInterval(
+      () => handleReq(token, stopCode, provider, lines),
+      30 * 1000
+    );
+    setTimeout(() => clearInterval(intervalID), expire * 60 * 1000);
+
+    res.send("SUCESS");
     return;
   }
 
@@ -38,3 +42,25 @@ app.post("/", (req, res) => {
 });
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
+function handleReq(
+  token: string,
+  stopCode: string,
+  provider: string,
+  lines: string[]
+) {
+
+  const message: ExpoPushMessage = {
+    to: token,
+    sound: 'default',
+    body: stopCode + provider,
+    title: 'STCP',
+  }
+
+  if (!Expo.isExpoPushToken(token)) {
+    console.error("Invalid Token")
+  }
+
+  expo.sendPushNotificationsAsync([message])
+  
+}
