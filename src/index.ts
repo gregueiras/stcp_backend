@@ -7,6 +7,7 @@ const app = express();
 app.use(express.json());
 
 const port = process.env.PORT || 3000;
+const interval = 30
 
 interface request {
   token: string;
@@ -18,6 +19,7 @@ interface request {
 
 app.post("/", (req, res) => {
   console.log(req.query);
+  console.log(req.body);
 
   if (req.body.token) {
     const {
@@ -28,9 +30,12 @@ app.post("/", (req, res) => {
       lines
     } = req.body as request;
 
+    console.log(
+      `Dispatching updates for ${provider}:${stopCode} [${lines}] every ${interval} for ${expire} minutes`
+    );
     const intervalID = setInterval(
       () => handleReq(token, stopCode, provider, lines),
-      30 * 1000
+      interval * 1000
     );
     setTimeout(() => clearInterval(intervalID), expire * 60 * 1000);
 
@@ -49,19 +54,17 @@ function handleReq(
   provider: string,
   lines: string[]
 ) {
-
   const message: ExpoPushMessage = {
     to: token,
-    sound: 'default',
+    sound: "default",
     body: stopCode + provider,
-    title: 'STCP',
-  }
+    title: "STCP"
+  };
 
   if (!Expo.isExpoPushToken(token)) {
-    console.error("Invalid Token")
+    console.error("Invalid Token");
   }
 
-  console.log("SENT")
-  expo.sendPushNotificationsAsync([message])
-  
+  console.log("SENT");
+  expo.sendPushNotificationsAsync([message]);
 }
