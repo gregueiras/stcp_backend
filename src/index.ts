@@ -11,7 +11,7 @@ const interval = 30
 
 interface request {
   token: string;
-  expire: number;
+  expire: string;
   stopCode: string;
   provider: string;
   lines: string[];
@@ -24,11 +24,13 @@ app.post("/", (req, res) => {
   if (req.body.token) {
     const {
       token,
-      expire = 10,
+      expire: expireTemp,
       stopCode,
       provider,
       lines
     } = req.body as request;
+
+    const expire = expireTemp ? parseInt(expireTemp.replace("*", "")) : 10
 
     console.log(
       `Dispatching updates for ${provider}:${stopCode} [${lines}] every ${interval} for ${expire} minutes`
