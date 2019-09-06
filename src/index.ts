@@ -10,11 +10,14 @@ app.use(express.json());
 const port = process.env.PORT || 3000;
 const interval = 30;
 
-const clients = {}; //Provider_StopCode is key, [{token, lines: [{line, expire}]}] is value
+const clients = {}; //Provider_StopCode is key, [{token, lines: [{line, time}]}] is value
+interface Array<T> {
+  flat(): Array<T>;
+  flatMap(func: (x: T) => T): Array<T>;
+}
 
 interface request {
   token: string;
-  expire: string;
   stopCode: string;
   provider: string;
   line: string;
@@ -22,7 +25,8 @@ interface request {
 
 interface line {
   line: string;
-  expire: number;
+  destination: string;
+  time: number;
 }
 
 interface clientEntry {
@@ -56,6 +60,16 @@ app.post("/", (req, res) => {
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
+setInterval(() => {
+  const stops = Object.keys(clients);
+  stops.map(stop => {
+    const [provider, stopCode] = stop.split("_");
+    const thisClients = clients[stop];
+
+    handleStop(provider, stopCode, thisClients);
+  });
+}, 5 * 1000);
+
 function getCode(provider, stopCode) {
   return `${provider}_${stopCode}`;
 }
@@ -63,36 +77,61 @@ function getCode(provider, stopCode) {
 function addClient({ token, provider, stopCode, line }) {
   const newEntry: clientEntry = {
     token,
-    lines: [{ line, expire: Infinity }]
+    lines: [{ line, time: null, destination: null }]
   };
-  
+
   const code = getCode(provider, stopCode);
   const stop = clients[code];
-  
-  if (stop) {
-    clients[code] = [...stop, newEntry]
-  } else {
-    clients[code] = [newEntry]
-  }
 
-  console.log(clients);
+  if (stop) {
+    let found = false;
+    const stopAdded = stop.map(({ token: tokenA, lines }) => {
+      if (token === tokenA) {
+        lines = [...lines, { line, time: null, destination: null }];
+        found = true;
+      }
+
+      return { token, lines };
+    });
+
+    if (!found) clients[code] = [...stop, newEntry];
+    else clients[code] = stopAdded;
+  } else {
+    clients[code] = [newEntry];
+  }
 }
 
-async function handleReq(
-  token: string,
-  stopCode: string,
-  provider: string,
-  lines: string[]
-) {
+async function handleStop(provider, stopCode, clientsArray: clientEntry[]) {
+  const info = await loadLines(provider, stopCode);
+  const lines = [...new Set(info.map(({ line }) => line))];
+
+  const nextLines = lines
+    .map(wantedLine => info.find(({ line }) => line === wantedLine))
+    .sort(({ time: timeA }, { time: timeB }) => {
+      return (
+        parseInt(timeA.replace("*", "")) - parseInt(timeB.replace("*", ""))
+      );
+    });
+
+  console.log(clientsArray);
+  clientsArray.map(({ token, lines }) => {
+    const wantedLines = lines
+      .map(({ line: wantedLine }) =>
+        nextLines.find(({ line }) => line === wantedLine)
+      )
+      .flat(2);
+
+    sendMessage(token, wantedLines, stopCode);
+  });
+}
+
+async function sendMessage(token: string, lines: line[], stopCode:string) {
   if (!Expo.isExpoPushToken(token)) {
     console.error("Invalid Token");
     //return;
   }
 
-  const nextLines = await loadMenu(provider, stopCode, lines);
-  console.log(nextLines);
-
-  const body = nextLines
+  const body = lines
     .map(
       ({ line, destination, time }) =>
         `${line} - ${destination
@@ -105,7 +144,7 @@ async function handleReq(
     to: token,
     sound: "default",
     body,
-    title: stopCode
+    title: stopCode,
   };
 
   expo.sendPushNotificationsAsync([message]);
@@ -113,11 +152,7 @@ async function handleReq(
   console.log(message);
 }
 
-async function loadMenu(
-  providerTemp: string,
-  stopCode: string,
-  lines: string[]
-) {
+async function loadLines(providerTemp: string, stopCode: string) {
   try {
     const provider = providerTemp.replace(/ /g, "+").toUpperCase();
     const stop = stopCode.replace(/ /g, "+");
@@ -136,18 +171,9 @@ async function loadMenu(
           time,
           id: line + "_" + time + "_" + destination + "_" + Math.random()
         };
-      })
-      .filter(({ line }) => lines.includes(line));
-
-    const nextLines = lines
-      .map(wantedLine => info.find(({ line }) => line === wantedLine))
-      .sort(({ time: timeA }, { time: timeB }) => {
-        return (
-          parseInt(timeA.replace("*", "")) - parseInt(timeB.replace("*", ""))
-        );
       });
 
-    return nextLines;
+    return info;
   } catch (error) {
     console.log("ERRO");
     console.log(error);
