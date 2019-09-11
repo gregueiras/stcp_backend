@@ -8,7 +8,8 @@
   "dependencies": {
     "expo-server-sdk": "^3.3.0",
     "express": "^4.17.1",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "prettyjson": "^1.2.1"
   },
   "scripts": {
     "start": "node build/index.js",
@@ -18,7 +19,6 @@
   },
   "devDependencies": {
     "@types/node": "^12.7.4",
-    "prettyjson": "^1.2.1",
     "typescript": "^3.6.2"
   }
 }
