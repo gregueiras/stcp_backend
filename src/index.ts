@@ -1,6 +1,7 @@
 const express = require("express");
 import Expo, { ExpoPushMessage } from "expo-server-sdk";
 const fetch = require("node-fetch");
+const prettyjson = require("prettyjson");
 
 let expo = new Expo();
 const app = express();
@@ -26,7 +27,7 @@ interface request {
 interface line {
   line: string;
   destination: string;
-  time: number;
+  time: string;
 }
 
 interface clientEntry {
@@ -47,11 +48,11 @@ app.post("/", (req, res) => {
   if (req.body.token) {
     const { token, stopCode, provider, line } = req.body as request;
 
-    console.log(`Line ${provider}:${stopCode} requested`);
+    console.log(`Line ${line} in ${provider}:${stopCode} requested`);
 
     addClient({ token, provider, stopCode, line });
 
-    res.send("SUCESS");
+    res.send("SUCCESS");
     return;
   }
 
@@ -86,12 +87,14 @@ function addClient({ token, provider, stopCode, line }) {
   if (stop) {
     let found = false;
     const stopAdded = stop.map(({ token: tokenA, lines }) => {
+      let newLines = lines;
       if (token === tokenA) {
-        lines = [...lines, { line, time: null, destination: null }];
+        newLines = [...lines, newEntry.lines[0]];
         found = true;
       }
 
-      return { token, lines };
+      const entry: clientEntry = { token: tokenA, lines: newLines };
+      return entry
     });
 
     if (!found) clients[code] = [...stop, newEntry];
@@ -99,6 +102,16 @@ function addClient({ token, provider, stopCode, line }) {
   } else {
     clients[code] = [newEntry];
   }
+
+  console.log(prettyjson.render(clients));
+}
+
+function updateClient(provider: string, stopCode:string, newData: clientEntry[]) {
+  const code = getCode(provider, stopCode);
+  clients[code] = newData;
+
+
+  console.log(Date.now(), prettyjson.render(clients));
 }
 
 async function handleStop(provider, stopCode, clientsArray: clientEntry[]) {
@@ -113,19 +126,35 @@ async function handleStop(provider, stopCode, clientsArray: clientEntry[]) {
       );
     });
 
-  console.log(clientsArray);
-  clientsArray.map(({ token, lines }) => {
-    const wantedLines = lines
-      .map(({ line: wantedLine }) =>
-        nextLines.find(({ line }) => line === wantedLine)
-      )
-      .flat(2);
+  const newData = clientsArray.map(({ token, lines }) => {
+    const wantedLines:line[] = lines
+      .map(({ line: wantedLine, time: lastTime }) => {
+        const { line, destination, time } = nextLines.find(
+          ({ line }) => line === wantedLine
+        );
+
+        if (lastTime) {
+          const timeDiff = Math.abs(parseInt(lastTime.replace("*", "")) - parseInt(time.replace("*", "")));
+          if (timeDiff > 3) return null;
+        }
+        return { line, destination, time };
+      })
+      .flat(2)
+      .filter(entry => entry !== null)
+      .sort(({ time: timeA }, { time: timeB }) => {
+        return (
+          parseInt(timeA.replace("*", "")) - parseInt(timeB.replace("*", ""))
+        );
+      });
 
     sendMessage(token, wantedLines, stopCode);
+    return { token, lines: wantedLines };
   });
+
+  updateClient(provider, stopCode, newData);
 }
 
-async function sendMessage(token: string, lines: line[], stopCode:string) {
+async function sendMessage(token: string, lines: line[], stopCode: string) {
   if (!Expo.isExpoPushToken(token)) {
     console.error("Invalid Token");
     //return;
@@ -144,12 +173,11 @@ async function sendMessage(token: string, lines: line[], stopCode:string) {
     to: token,
     sound: "default",
     body,
-    title: stopCode,
+    title: stopCode
   };
 
   expo.sendPushNotificationsAsync([message]);
   console.log("SENT");
-  console.log(message);
 }
 
 async function loadLines(providerTemp: string, stopCode: string) {
@@ -175,7 +203,7 @@ async function loadLines(providerTemp: string, stopCode: string) {
 
     return info;
   } catch (error) {
-    console.log("ERRO");
+    console.log("ERROR");
     console.log(error);
   }
 }
