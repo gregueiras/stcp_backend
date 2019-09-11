@@ -59,7 +59,7 @@ app.post("/", (req, res) => {
   res.send(JSON.stringify(req.body));
 });
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.listen(port, () => console.log(`Backend app listening on port ${port}!`));
 
 setInterval(() => {
   const stops = Object.keys(clients);
@@ -109,9 +109,6 @@ function addClient({ token, provider, stopCode, line }) {
 function updateClient(provider: string, stopCode:string, newData: clientEntry[]) {
   const code = getCode(provider, stopCode);
   clients[code] = newData;
-
-
-  console.log(Date.now(), prettyjson.render(clients));
 }
 
 async function handleStop(provider, stopCode, clientsArray: clientEntry[]) {
