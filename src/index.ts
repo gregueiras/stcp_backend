@@ -1,6 +1,7 @@
 require('dotenv').config()
 import express = require('express')
 import Expo = require('expo-server-sdk')
+import prettyjson = require('prettyjson')
 
 import { addClient, getClients } from './clients'
 import { sendMessage } from './message'
@@ -44,6 +45,7 @@ app.listen(port, () => console.log(`Backend app listening on port ${port}!`))
 
 setInterval(() => {
   const clients = getClients()
+
   const stops = Object.keys(clients)
 
   stops.map(stop => {
@@ -52,4 +54,6 @@ setInterval(() => {
 
     handleStop(provider, stopCode, thisClients, expo, sendMessage)
   })
+
+  console.log(prettyjson.render(clients))
 }, interval * 1000)

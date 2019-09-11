@@ -5,7 +5,7 @@ import ExpoPushMessage = AuxExpo.ExpoPushMessage
 function sendMessage(token: string, lines: Line[], stopCode: string, expo: Expo): void {
   if (!Expo.isExpoPushToken(token)) {
     console.error('Invalid Token')
-    //return;
+    return
   }
 
   const body = lines

@@ -36,9 +36,13 @@ function addClient({ token, provider, stopCode, line }): void {
 
 function updateClient(provider: string, stopCode: string, newData: ClientEntry[]): void {
   const code = getCode(provider, stopCode)
-  clients[code] = newData
 
-  console.log(prettyjson.render(clients))
+  newData = newData.filter(({ lines }) => lines.length)
+  if (newData.length === 0) {
+    delete clients[code]
+  } else {
+    clients[code] = newData
+  }
 }
 
 function getClients(): Record<string, ClientEntry[]> {

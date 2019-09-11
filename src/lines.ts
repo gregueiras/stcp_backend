@@ -32,8 +32,8 @@ async function loadLines(providerTemp: string, stopCode: string): Promise<Line[]
 }
 
 async function handleStop(
-  provider,
-  stopCode,
+  provider: string,
+  stopCode: string,
   clientsArray: ClientEntry[],
   expo: Expo.Expo,
   sendMessage: Function,
