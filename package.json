@@ -20,5 +20,8 @@
   "devDependencies": {
     "@types/node": "^12.7.4",
     "typescript": "^3.6.2"
+  },
+  "engines": {
+    "node": "12.9.1"
   }
 }
