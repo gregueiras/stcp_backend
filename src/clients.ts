@@ -1,5 +1,5 @@
 import prettyjson = require('prettyjson')
-import { getCode } from './aux'
+import { getCode } from './auxFunctions'
 
 const clients = {} //Provider_StopCode is key, [{token, lines: [{line, time}]}] is value
 
