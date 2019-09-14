@@ -3,7 +3,7 @@ import { getCode } from './auxFunctions'
 
 const clients = {} //Provider_StopCode is key, [{token, lines: [{line, time}]}] is value
 
-function addClient({ token, provider, stopCode, line }): void {
+export function addClient({ token, provider, stopCode, line }): void {
   const newEntry: ClientEntry = {
     token,
     lines: [{ line, time: null, destination: null }],
@@ -34,7 +34,7 @@ function addClient({ token, provider, stopCode, line }): void {
   console.log(prettyjson.render(clients))
 }
 
-function updateClient(provider: string, stopCode: string, newData: ClientEntry[]): void {
+export function updateClient(provider: string, stopCode: string, newData: ClientEntry[]): void {
   const code = getCode(provider, stopCode)
 
   newData = newData.filter(({ lines }) => lines.length)
@@ -45,8 +45,16 @@ function updateClient(provider: string, stopCode: string, newData: ClientEntry[]
   }
 }
 
-function getClients(): Record<string, ClientEntry[]> {
+export function getClients(): Record<string, ClientEntry[]> {
   return clients
 }
 
-export { addClient, updateClient, getClients }
+export function removeClient({ token: tokenToRemove, provider, stopCode }): void {
+  const code = getCode(provider, stopCode)
+  console.log(code)
+  const entry = clients[code]
+
+  console.dir(prettyjson.render(entry))
+
+  clients[code] = entry.filter(({ token }) => token !== tokenToRemove)
+}

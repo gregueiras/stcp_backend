@@ -3,7 +3,7 @@ import express = require('express')
 import Expo = require('expo-server-sdk')
 import prettyjson = require('prettyjson')
 
-import { addClient, getClients } from './clients'
+import { addClient, removeClient, getClients } from './clients'
 import { sendMessage } from './message'
 import { handleStop } from './lines'
 
@@ -15,16 +15,13 @@ app.use(express.json())
 const port = process.env.PORT || 3000
 const interval = process.env.NODE_ENV === 'development' ? 5 : 30
 
-/*
 app.post('/unsubscribe', (req, res) => {
-  const { token } = req.body
-  const clients = getClients()
+  const { token, stopCode, provider } = req.body as Request
 
-  const intervalID = clients[token]
+  removeClient({ token, provider, stopCode })
 
   res.send('SUCCESS')
 })
-*/
 
 app.post('/', (req: express.Request, res: express.Response) => {
   if (req.body.token) {
@@ -55,5 +52,5 @@ setInterval(() => {
     handleStop(provider, stopCode, thisClients, expo, sendMessage)
   })
 
-  console.log(prettyjson.render(clients))
+  if (stops.length > 0) console.log(prettyjson.render(clients))
 }, interval * 1000)

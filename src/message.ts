@@ -19,8 +19,10 @@ function sendMessage(token: string, lines: Line[], stopCode: string, expo: Expo)
     title: stopCode,
   }
 
-  expo.sendPushNotificationsAsync([message])
-  console.log('SENT')
+  if (body.length > 0) {
+    expo.sendPushNotificationsAsync([message])
+    console.log('SENT')
+  }
 }
 
 export { sendMessage }
