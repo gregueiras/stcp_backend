@@ -56,5 +56,5 @@ export function removeClient({ token: tokenToRemove, provider, stopCode }): void
 
   console.dir(prettyjson.render(entry))
 
-  clients[code] = entry.filter(({ token }) => token !== tokenToRemove)
+  updateClient(provider, stopCode, entry.filter(({ token }) => token !== tokenToRemove)
 }
