@@ -44,7 +44,7 @@ async function handleStop(
   const nextLines = lines
     .map(wantedLine => info.find(({ line }) => line === wantedLine))
     .sort(({ time: timeA }, { time: timeB }) => {
-      return parseInt(timeA.replace('*', '')) - parseInt(timeB.replace('*', ''))
+      return parseInt(timeA.replace(/\*/g, '')) - parseInt(timeB.replace(/\*/g, ''))
     })
 
   const newData = clientsArray.map(({ token, lines }) => {
@@ -53,7 +53,7 @@ async function handleStop(
         const { line, destination, time } = nextLines.find(({ line }) => line === wantedLine)
 
         if (lastTime) {
-          const timeDiff = Math.abs(parseInt(lastTime.replace('*', '')) - parseInt(time.replace('*', '')))
+          const timeDiff = Math.abs(parseInt(lastTime.replace(/\*/g, '')) - parseInt(time.replace(/\*/g, '')))
           if (timeDiff > 3) return null
         }
         return { line, destination, time }
@@ -61,7 +61,7 @@ async function handleStop(
       .flat(2)
       .filter(entry => entry !== null)
       .sort(({ time: timeA }, { time: timeB }) => {
-        return parseInt(timeA.replace('*', '')) - parseInt(timeB.replace('*', ''))
+        return parseInt(timeA.replace(/\*/g, '')) - parseInt(timeB.replace(/\*/g, ''))
       })
 
     sendMessage(token, wantedLines, stopCode, expo)

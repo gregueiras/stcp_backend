@@ -35,7 +35,7 @@ app.post('/', (req: express.Request, res: express.Response) => {
     return
   }
 
-  res.send(JSON.stringify(req.body))
+  res.status(404).send('No expo token sent in body')
 })
 
 app.listen(port, () => console.log(`Backend app listening on port ${port}!`))
