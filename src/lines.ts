@@ -1,6 +1,7 @@
 import Expo = require('expo-server-sdk')
 import fetch = require('node-fetch')
 import { updateClient } from './clients'
+import { cleanTime } from './auxFunctions'
 
 async function loadLines(providerTemp: string, stopCode: string): Promise<Line[]> {
   try {
@@ -44,7 +45,7 @@ async function handleStop(
   const nextLines = lines
     .map(wantedLine => info.find(({ line }) => line === wantedLine))
     .sort(({ time: timeA }, { time: timeB }) => {
-      return parseInt(timeA.replace(/\*/g, '')) - parseInt(timeB.replace(/\*/g, ''))
+      return cleanTime(timeA) - cleanTime(timeB)
     })
 
   const newData = clientsArray.map(({ token, lines }) => {
@@ -53,7 +54,7 @@ async function handleStop(
         const { line, destination, time } = nextLines.find(({ line }) => line === wantedLine)
 
         if (lastTime) {
-          const timeDiff = Math.abs(parseInt(lastTime.replace(/\*/g, '')) - parseInt(time.replace(/\*/g, '')))
+          const timeDiff = Math.abs(cleanTime(lastTime) - cleanTime(time))
           if (timeDiff > 3) return null
         }
         return { line, destination, time }
@@ -61,7 +62,7 @@ async function handleStop(
       .flat(2)
       .filter(entry => entry !== null)
       .sort(({ time: timeA }, { time: timeB }) => {
-        return parseInt(timeA.replace(/\*/g, '')) - parseInt(timeB.replace(/\*/g, ''))
+        return cleanTime(timeA) - cleanTime(timeB)
       })
 
     sendMessage(token, wantedLines, stopCode, expo)
