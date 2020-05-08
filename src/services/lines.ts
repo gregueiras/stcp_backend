@@ -5,12 +5,22 @@ import { parse, HTMLElement } from 'node-html-parser'
 import { updateClient } from '../clients/clients'
 import { cleanTime } from '../auxFunctions'
 import { Line, ClientEntry } from '../types'
+import CacheService from './cache'
 
-async function loadLines(providerTemp: string, code: string): Promise<Line[]> {
+const ttl = 30 // cache for 30 seconds
+const cache = new CacheService(ttl) // Create a new cache service instance
+
+export async function getLines(providerTemp: string, code: string) {
+  const provider = providerTemp.replace(/ /g, '+').toUpperCase()
+  const stop = code.replace(/ /g, '+')
+
+  const key = `${provider}_${stop}`
+
+  return await cache.get(key, () => loadLines(provider, stop))
+}
+
+async function loadLines(provider: string, stop: string): Promise<Line[]> {
   try {
-    const provider = providerTemp.replace(/ /g, '+').toUpperCase()
-    const stop = code.replace(/ /g, '+')
-
     if (provider !== 'STCP') throw 'Invalid Provider'
 
     // MOVE-ME API stopped working, even in the official site
@@ -22,10 +32,10 @@ async function loadLines(providerTemp: string, code: string): Promise<Line[]> {
     const parsed = parse(page) as HTMLElement
 
     const rows = parsed.querySelectorAll('tr').slice(1)
-    const lines = rows.map(row =>
+    const lines = rows.map((row) =>
       row
         .querySelectorAll('td')
-        .map(cell => {
+        .map((cell) => {
           const length = cell.childNodes.length
 
           if (length > 1) {
@@ -45,14 +55,14 @@ async function loadLines(providerTemp: string, code: string): Promise<Line[]> {
         .reduce((acc, currVal) => ({ ...acc, ...currVal })),
     )
 
-    return lines;
+    return lines
   } catch (error) {
     console.log('ERROR')
     console.log(error)
   }
 }
 
-async function handleStop(
+export async function handleStop(
   provider: string,
   code: string,
   clientsArray: ClientEntry[],
@@ -63,7 +73,7 @@ async function handleStop(
   const lines = [...new Set(info.map(({ line }) => line))]
 
   const nextLines = lines
-    .map(wantedLine => info.find(({ line }) => line === wantedLine))
+    .map((wantedLine) => info.find(({ line }) => line === wantedLine))
     .sort(({ time: timeA }, { time: timeB }) => {
       return cleanTime(timeA) - cleanTime(timeB)
     })
@@ -80,7 +90,7 @@ async function handleStop(
         return { line, destination, time }
       })
       .flat(2)
-      .filter(entry => entry !== null)
+      .filter((entry) => entry !== null)
       .sort(({ time: timeA }, { time: timeB }) => {
         return cleanTime(timeA) - cleanTime(timeB)
       })
@@ -91,5 +101,3 @@ async function handleStop(
 
   updateClient(provider, code, newData)
 }
-
-export { handleStop, loadLines }
