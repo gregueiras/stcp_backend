@@ -15,7 +15,7 @@
     "prettyjson": "^1.2.1"
   },
   "scripts": {
-    "start": "node --inspect=5858 -r ts-node/register ./src/index.ts",
+    "start": "node ./build/index.js",
     "build": "tsc",
     "postinstall": "yarn build",
     "lint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
