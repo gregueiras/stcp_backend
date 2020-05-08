@@ -11,7 +11,7 @@ import { getStop } from './stops/controller'
 const expo = new Expo()
 const app = express()
 if (process.env.NODE_ENV !== 'development') {
-  Sentry.init({ dsn: process.env.SENTRY })
+  Sentry.init({ dsn: process.env.SENTRY, release: 'stcp_backend@' + process.env.npm_package_version })
   app.use(Sentry.Handlers.requestHandler())
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "stcp_backend",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "index.js",
   "repository": "https://github.com/gregueiras/stcp_backend.git",
   "author": "Gonçalo Santos <gregueiras@gmail.com>",
