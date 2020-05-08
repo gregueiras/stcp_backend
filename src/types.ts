@@ -9,6 +9,7 @@ export interface Line {
   line: string
   destination: string
   time: string
+  remainingTime?: string
 }
 
 export interface ClientEntry {

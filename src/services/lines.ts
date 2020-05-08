@@ -1,5 +1,7 @@
 import * as Expo from 'expo-server-sdk'
-import * as fetch from 'node-fetch'
+import fetch from 'node-fetch'
+import { parse, HTMLElement } from 'node-html-parser'
+
 import { updateClient } from '../clients/clients'
 import { cleanTime } from '../auxFunctions'
 import { Line, ClientEntry } from '../types'
@@ -9,24 +11,41 @@ async function loadLines(providerTemp: string, code: string): Promise<Line[]> {
     const provider = providerTemp.replace(/ /g, '+').toUpperCase()
     const stop = code.replace(/ /g, '+')
 
-    const searchUrl = `http://www.move-me.mobi/NextArrivals/GetScheds?providerName=${provider}&code=${provider}_${stop}`
+    if (provider !== 'STCP') throw 'Invalid Provider'
+
+    // MOVE-ME API stopped working, even in the official site
+    //const searchUrl = `http://www.move-me.mobi/NextArrivals/GetScheds?providerName=${provider}&code=${provider}_${stop}`
+    const searchUrl = `https://www.stcp.pt/pt/itinerarium/soapclient.php?codigo=${stop}`
 
     const response = await fetch(searchUrl) // fetch page
-    const json = await response.json() // get response text
+    const page = await response.text() // get response text
+    const parsed = parse(page) as HTMLElement
 
-    const info = json
-      .map(({ Value }) => Value)
-      .map(([line, destination, time]) => {
-        const ret: Line = {
-          line,
-          destination,
-          time,
-        }
+    const rows = parsed.querySelectorAll('tr').slice(1)
+    const lines = rows.map(row =>
+      row
+        .querySelectorAll('td')
+        .map(cell => {
+          const length = cell.childNodes.length
 
-        return ret
-      })
+          if (length > 1) {
+            return {
+              line: cell.childNodes[1].childNodes[1].text.trim(),
+              destination: cell.childNodes[2].rawText.replace(/(&nbsp;)|(-)/g, '').trim(),
+            }
+          }
 
-    return info
+          if (cell?.childNodes[0]?.childNodes?.length > 0) {
+            return { time: cell.rawText.trim() }
+          } else {
+            return { remainingTime: cell.rawText }
+          }
+        })
+        // @ts-ignore
+        .reduce((acc, currVal) => ({ ...acc, ...currVal })),
+    )
+
+    return lines;
   } catch (error) {
     console.log('ERROR')
     console.log(error)
