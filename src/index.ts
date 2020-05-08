@@ -23,6 +23,10 @@ app.post('/subscribe', subscribe)
 app.post('/unsubscribe', unsubscribe)
 app.post('/stops', getStop)
 
+app.get('/debug-sentry', function mainHandler(req, res) {
+  throw new Error('My first Sentry error!')
+})
+
 app.use(Sentry.Handlers.errorHandler())
 
 app.listen(port, () => console.log(`Backend app listening on port ${port}!`))
