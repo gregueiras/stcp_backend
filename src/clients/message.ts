@@ -1,8 +1,9 @@
 import AuxExpo = require('expo-server-sdk')
 import Expo = AuxExpo.Expo
 import ExpoPushMessage = AuxExpo.ExpoPushMessage
+import { Line } from '../types'
 
-function sendMessage(token: string, lines: Line[], stopCode: string, expo: Expo): void {
+function sendMessage(token: string, lines: Line[], code: string, expo: Expo): void {
   if (!Expo.isExpoPushToken(token)) {
     console.error('Invalid Token')
     return
@@ -16,7 +17,7 @@ function sendMessage(token: string, lines: Line[], stopCode: string, expo: Expo)
     to: token,
     sound: 'default',
     body,
-    title: stopCode,
+    title: code,
   }
 
   if (body.length > 0) {

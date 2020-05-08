@@ -1,17 +1,17 @@
-interface Request {
+export interface Request {
   token: string
-  stopCode: string
+  code: string
   provider: string
   line: string
 }
 
-interface Line {
+export interface Line {
   line: string
   destination: string
   time: string
 }
 
-interface ClientEntry {
+export interface ClientEntry {
   token: string
   lines: Line[]
 }

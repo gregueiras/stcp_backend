@@ -1,14 +1,15 @@
-import Expo = require('expo-server-sdk')
-import fetch = require('node-fetch')
-import { updateClient } from './clients'
-import { cleanTime } from './auxFunctions'
+import * as Expo from 'expo-server-sdk'
+import * as fetch from 'node-fetch'
+import { updateClient } from '../clients/clients'
+import { cleanTime } from '../auxFunctions'
+import { Line, ClientEntry } from '../types'
 
-async function loadLines(providerTemp: string, stopCode: string): Promise<Line[]> {
+async function loadLines(providerTemp: string, code: string): Promise<Line[]> {
   try {
     const provider = providerTemp.replace(/ /g, '+').toUpperCase()
-    const stop = stopCode.replace(/ /g, '+')
+    const stop = code.replace(/ /g, '+')
 
-    const searchUrl = `http://www.move-me.mobi/NextArrivals/GetScheds?providerName=${provider}&stopCode=${provider}_${stop}`
+    const searchUrl = `http://www.move-me.mobi/NextArrivals/GetScheds?providerName=${provider}&code=${provider}_${stop}`
 
     const response = await fetch(searchUrl) // fetch page
     const json = await response.json() // get response text
@@ -34,12 +35,12 @@ async function loadLines(providerTemp: string, stopCode: string): Promise<Line[]
 
 async function handleStop(
   provider: string,
-  stopCode: string,
+  code: string,
   clientsArray: ClientEntry[],
   expo: Expo.Expo,
   sendMessage: Function,
 ): Promise<void> {
-  const info = await loadLines(provider, stopCode)
+  const info = await loadLines(provider, code)
   const lines = [...new Set(info.map(({ line }) => line))]
 
   const nextLines = lines
@@ -65,11 +66,11 @@ async function handleStop(
         return cleanTime(timeA) - cleanTime(timeB)
       })
 
-    sendMessage(token, wantedLines, stopCode, expo)
+    sendMessage(token, wantedLines, code, expo)
     return { token, lines: wantedLines }
   })
 
-  updateClient(provider, stopCode, newData)
+  updateClient(provider, code, newData)
 }
 
 export { handleStop, loadLines }

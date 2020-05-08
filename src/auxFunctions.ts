@@ -1,5 +1,5 @@
-export function getCode(provider: string, stopCode: string): string {
-  return `${provider}_${stopCode}`
+export function getCode(provider: string, code: string): string {
+  return `${provider}_${code}`
 }
 
 export function cleanTime(time: string): number {

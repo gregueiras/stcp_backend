@@ -1,11 +1,14 @@
 require('dotenv').config()
-import express = require('express')
-import Expo = require('expo-server-sdk')
-import prettyjson = require('prettyjson')
+import * as express from 'express'
+import * as Expo from 'expo-server-sdk'
+import * as prettyjson from 'prettyjson'
 
-import { addClient, removeClient, getClients } from './clients'
-import { sendMessage } from './message'
-import { handleStop } from './lines'
+import { getClients } from './clients/clients'
+import { sendMessage } from './clients/message'
+import { handleStop } from './services/lines'
+
+import { unsubscribe, subscribe } from './clients/controller'
+import { getStop } from './stops/controller'
 
 const expo = new Expo.Expo()
 const app = express()
@@ -15,41 +18,23 @@ app.use(express.json())
 const port = process.env.PORT || 3000
 const interval = process.env.NODE_ENV === 'development' ? 5 : 30
 
-app.post('/unsubscribe', (req, res) => {
-  const { token, stopCode, provider } = req.body as Request
-
-  removeClient({ token, provider, stopCode })
-
-  res.send('SUCCESS')
-})
-
-app.post('/', (req: express.Request, res: express.Response) => {
-  if (req.body.token) {
-    const { token, stopCode, provider, line } = req.body as Request
-
-    console.log(`Line ${line} in ${provider}:${stopCode} requested`)
-
-    addClient({ token, provider, stopCode, line })
-
-    res.send('SUCCESS')
-    return
-  }
-
-  res.status(404).send('No expo token sent in body')
-})
+app.post('/subscribe', subscribe)
+app.post('/unsubscribe', unsubscribe)
+app.post('/stops', getStop)
 
 app.listen(port, () => console.log(`Backend app listening on port ${port}!`))
 
+// Update Subscribed Stops
 setInterval(() => {
   const clients = getClients()
 
   const stops = Object.keys(clients)
 
   stops.map(stop => {
-    const [provider, stopCode] = stop.split('_')
+    const [provider, code] = stop.split('_')
     const thisClients = clients[stop]
 
-    handleStop(provider, stopCode, thisClients, expo, sendMessage)
+    handleStop(provider, code, thisClients, expo, sendMessage)
   })
 
   if (stops.length > 0) console.log(prettyjson.render(clients))

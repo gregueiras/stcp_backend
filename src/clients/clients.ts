@@ -1,16 +1,17 @@
 import prettyjson = require('prettyjson')
-import { getCode } from './auxFunctions'
+import { getCode } from '../auxFunctions'
+import { ClientEntry } from '../types'
 
-const clients = {} //Provider_StopCode is key, [{token, lines: [{line, time}]}] is value
+const clients = {} //Provider_code is key, [{token, lines: [{line, time}]}] is value
 
-export function addClient({ token, provider, stopCode, line }): void {
+export function addClient({ token, provider, code, line }): void {
   const newEntry: ClientEntry = {
     token,
     lines: [{ line, time: null, destination: null }],
   }
 
-  const code = getCode(provider, stopCode)
-  const stop = clients[code]
+  const stopCode = getCode(provider, code)
+  const stop = clients[stopCode]
 
   if (stop) {
     let found = false
@@ -25,23 +26,23 @@ export function addClient({ token, provider, stopCode, line }): void {
       return entry
     })
 
-    if (!found) clients[code] = [...stop, newEntry]
-    else clients[code] = stopAdded
+    if (!found) clients[stopCode] = [...stop, newEntry]
+    else clients[stopCode] = stopAdded
   } else {
-    clients[code] = [newEntry]
+    clients[stopCode] = [newEntry]
   }
 
   console.log(prettyjson.render(clients))
 }
 
-export function updateClient(provider: string, stopCode: string, newData: ClientEntry[]): void {
-  const code = getCode(provider, stopCode)
+export function updateClient(provider: string, code: string, newData: ClientEntry[]): void {
+  const stopCode = getCode(provider, code)
 
   newData = newData.filter(({ lines }) => lines.length)
   if (newData.length === 0) {
-    delete clients[code]
+    delete clients[stopCode]
   } else {
-    clients[code] = newData
+    clients[stopCode] = newData
   }
 }
 
@@ -49,9 +50,9 @@ export function getClients(): Record<string, ClientEntry[]> {
   return clients
 }
 
-export function removeClient({ token: tokenToRemove, provider, stopCode }): void {
-  const code = getCode(provider, stopCode)
-  console.log(code)
+export function removeClient({ token: tokenToRemove, provider, code }): void {
+  const stopCode = getCode(provider, code)
+  console.log(stopCode)
   const entry = clients[code]
 
   console.dir(prettyjson.render(entry))
