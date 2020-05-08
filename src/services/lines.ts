@@ -1,5 +1,7 @@
 import * as Expo from 'expo-server-sdk'
 import fetch from 'node-fetch'
+import * as Sentry from '@sentry/node'
+
 import { parse, HTMLElement } from 'node-html-parser'
 
 import { updateClient } from '../clients/clients'
@@ -15,6 +17,7 @@ export async function getLines(providerTemp: string, code: string) {
   const stop = code.replace(/ /g, '+')
 
   const key = `${provider}_${stop}`
+  Sentry.captureMessage(`New Line Request for ${provider}-${code}`)
 
   return await cache.get(key, () => loadLines(provider, stop))
 }
@@ -58,6 +61,7 @@ async function loadLines(provider: string, stop: string): Promise<Line[]> {
     return lines
   } catch (error) {
     console.log('ERROR')
+    Sentry.captureException(error)
     console.log(error)
   }
 }

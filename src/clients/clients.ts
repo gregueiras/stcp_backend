@@ -3,11 +3,13 @@ import { getCode } from '../auxFunctions'
 import { ClientEntry } from '../types'
 import { sendMessage } from './message'
 import { handleStop } from '../services/lines'
+import * as Sentry from '@sentry/node'
 import Expo from 'expo-server-sdk'
 
 const clients = {} //Provider_code is key, [{token, lines: [{line, time}]}] is value
 
 export function addClient({ token, provider, code, line }): void {
+  Sentry.captureMessage(`New Notification Request for ${provider}-${code} ${line} `)
   const newEntry: ClientEntry = {
     token,
     lines: [{ line, time: null, destination: null }],
