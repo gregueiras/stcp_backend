@@ -1,6 +1,9 @@
 import prettyjson = require('prettyjson')
 import { getCode } from '../auxFunctions'
 import { ClientEntry } from '../types'
+import { sendMessage } from './message'
+import { handleStop } from '../services/lines'
+import Expo from 'expo-server-sdk'
 
 const clients = {} //Provider_code is key, [{token, lines: [{line, time}]}] is value
 
@@ -32,7 +35,7 @@ export function addClient({ token, provider, code, line }): void {
     clients[stopCode] = [newEntry]
   }
 
-  console.log(prettyjson.render(clients))
+  if (process.env.NODE_ENV === 'development') console.log(prettyjson.render(clients))
 }
 
 export function updateClient(provider: string, code: string, newData: ClientEntry[]): void {
@@ -52,10 +55,29 @@ export function getClients(): Record<string, ClientEntry[]> {
 
 export function removeClient({ token: tokenToRemove, provider, code }): void {
   const stopCode = getCode(provider, code)
-  console.log(stopCode)
+
   const entry = clients[code]
 
-  console.dir(prettyjson.render(entry))
+  if (process.env.NODE_ENV === 'development') console.dir(prettyjson.render(entry))
 
-  updateClient(provider, stopCode, entry.filter(({ token }) => token !== tokenToRemove))
+  updateClient(
+    provider,
+    stopCode,
+    entry.filter(({ token }) => token !== tokenToRemove),
+  )
+}
+
+export function setupNotifications(expo: Expo, interval: number) {
+  setInterval(() => {
+    const clients = getClients()
+
+    const stops = Object.keys(clients)
+
+    stops.map((stop) => {
+      const [provider, code] = stop.split('_')
+      const thisClients = clients[stop]
+
+      handleStop(provider, code, thisClients, expo, sendMessage)
+    })
+  }, interval * 1000)
 }

@@ -6,6 +6,7 @@
   "author": "Gonçalo Santos <gregueiras@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@sentry/node": "5.15.5",
     "dotenv": "^8.2.0",
     "expo-server-sdk": "^3.5.0",
     "express": "^4.17.1",
