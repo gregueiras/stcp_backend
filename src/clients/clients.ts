@@ -70,11 +70,15 @@ export function removeClient({
 
   if (process.env.NODE_ENV === 'development') console.dir(prettyjson.render(entry))
 
-  updateClient(
-    provider,
-    stopCode,
-    entry.filter(({ token }) => token !== tokenToRemove),
-  )
+  try {
+    updateClient(
+      provider,
+      stopCode,
+      entry.filter(({ token }) => token !== tokenToRemove),
+    )
+  } catch (error) {
+    Sentry.captureException(error)
+  }
 }
 
 export function setupNotifications(expo: Expo, interval: number): void {

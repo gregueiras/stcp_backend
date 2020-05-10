@@ -5,13 +5,15 @@
     "target": "es6",
     "noImplicitAny": true,
     "moduleResolution": "node",
-    "sourceMap": true,
     "outDir": "build",
     "lib": ["es2019"],
     "baseUrl": ".",
     "paths": {
       "~/*": ["src/*"]
-   },
+    },
+    "sourceMap": true,
+    "inlineSources": true,
+    "sourceRoot": "/"
   },
   "include": ["src/**/*"]
 }
