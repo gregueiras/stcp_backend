@@ -8,7 +8,10 @@ function sendMessage(token: string, lines: Line[], code: string, expo: Expo): vo
   }
 
   const body = lines
-    .map(({ line, destination, time }) => `${line} - ${destination.replace(/\t/g, '').replace(/  */g, ' ')} - ${time}`)
+    .map(
+      ({ line, destination, time, remainingTime }) =>
+        `${line} - ${destination.replace(/\t/g, '').replace(/  */g, ' ')} - ${remainingTime ?? time}`,
+    )
     .join('\n')
 
   const message: ExpoPushMessage = {
