@@ -14,6 +14,9 @@ const clients: Clients = {} //Provider_code is key, [{token, lines: [{line, time
 
 export function addClient({ token, provider, code, line }: Request): void {
   Sentry.captureMessage(`New Notification Request for ${getCode(provider, code)} ${line} `)
+   
+  if ( !token || !provider || !code || !line ) return;
+  
   const newEntry: ClientEntry = {
     token,
     lines: [{ line, time: null, destination: null }],
