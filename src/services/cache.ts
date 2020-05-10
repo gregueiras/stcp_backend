@@ -4,7 +4,7 @@ class Cache {
   cache: NodeCache
 
   constructor(ttlSeconds: number) {
-    this.cache = new NodeCache({ stdTTL: ttlSeconds, checkperiod: ttlSeconds * 0.2, useClones: false })
+    this.cache = new NodeCache.default({ stdTTL: ttlSeconds, checkperiod: ttlSeconds * 0.2, useClones: false })
   }
 
   async get<T>(key: string, storeFunction: () => Promise<T>): Promise<T> {
@@ -18,11 +18,11 @@ class Cache {
     return result
   }
 
-  del(keys: string) {
+  del(keys: string): void {
     this.cache.del(keys)
   }
 
-  delStartWith(startStr = '') {
+  delStartWith(startStr = ''): void {
     if (!startStr) {
       return
     }
@@ -35,7 +35,7 @@ class Cache {
     }
   }
 
-  flush() {
+  flush(): void {
     this.cache.flushAll()
   }
 }

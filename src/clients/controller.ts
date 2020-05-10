@@ -1,6 +1,7 @@
 import { addClient, removeClient } from './clients'
 import * as Express from 'express'
-import { Request } from '../types'
+import { Request } from 'src/types'
+import { getCode } from 'src/auxFunctions'
 
 export const unsubscribe = (req: Express.Request, res: Express.Response): void => {
   const { token, code, provider } = req.body as Request
@@ -14,7 +15,7 @@ export const subscribe = (req: Express.Request, res: Express.Response): void => 
   if (req.body.token) {
     const { token, code, provider, line } = req.body as Request
 
-    console.log(`Line ${line} in ${provider}:${code} requested`)
+    console.log(`Line ${line} in ${getCode(provider, code)} requested`)
 
     addClient({ token, provider, code, line })
 

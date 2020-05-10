@@ -1,15 +1,19 @@
-import prettyjson = require('prettyjson')
-import { getCode } from '../auxFunctions'
-import { ClientEntry } from '../types'
+import prettyjson from 'prettyjson'
+import { getCode } from 'src/auxFunctions'
+import { ClientEntry, Request } from 'src/types'
 import { sendMessage } from './message'
-import { handleStop } from '../services/lines'
+import { handleStop } from 'src/services/lines'
 import * as Sentry from '@sentry/node'
 import Expo from 'expo-server-sdk'
 
-const clients = {} //Provider_code is key, [{token, lines: [{line, time}]}] is value
+interface Clients {
+  [key: string]: ClientEntry[]
+}
 
-export function addClient({ token, provider, code, line }): void {
-  Sentry.captureMessage(`New Notification Request for ${provider}-${code} ${line} `)
+const clients: Clients = {} //Provider_code is key, [{token, lines: [{line, time}]}] is value
+
+export function addClient({ token, provider, code, line }: Request): void {
+  Sentry.captureMessage(`New Notification Request for ${getCode(provider, code)} ${line} `)
   const newEntry: ClientEntry = {
     token,
     lines: [{ line, time: null, destination: null }],
@@ -51,11 +55,15 @@ export function updateClient(provider: string, code: string, newData: ClientEntr
   }
 }
 
-export function getClients(): Record<string, ClientEntry[]> {
+export function getClients(): Clients {
   return clients
 }
 
-export function removeClient({ token: tokenToRemove, provider, code }): void {
+export function removeClient({
+  token: tokenToRemove,
+  provider,
+  code,
+}: Pick<Request, 'code' | 'provider' | 'token'>): void {
   const stopCode = getCode(provider, code)
 
   const entry = clients[code]
@@ -69,7 +77,7 @@ export function removeClient({ token: tokenToRemove, provider, code }): void {
   )
 }
 
-export function setupNotifications(expo: Expo, interval: number) {
+export function setupNotifications(expo: Expo, interval: number): void {
   setInterval(() => {
     const clients = getClients()
 

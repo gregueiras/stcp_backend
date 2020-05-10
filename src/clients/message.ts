@@ -1,7 +1,5 @@
-import AuxExpo = require('expo-server-sdk')
-import Expo = AuxExpo.Expo
-import ExpoPushMessage = AuxExpo.ExpoPushMessage
-import { Line } from '../types'
+import Expo, { ExpoPushMessage } from 'expo-server-sdk'
+import { Line } from 'src/types'
 
 function sendMessage(token: string, lines: Line[], code: string, expo: Expo): void {
   if (!Expo.isExpoPushToken(token)) {

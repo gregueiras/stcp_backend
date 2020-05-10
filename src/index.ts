@@ -9,7 +9,8 @@ import { unsubscribe, subscribe } from './clients/controller'
 import { getStop } from './stops/controller'
 
 const expo = new Expo()
-const app = express()
+const app = express.default()
+
 if (process.env.NODE_ENV !== 'development') {
   Sentry.init({ dsn: process.env.SENTRY, release: 'stcp_backend@' + process.env.npm_package_version })
   app.use(Sentry.Handlers.requestHandler())
@@ -23,7 +24,7 @@ app.post('/subscribe', subscribe)
 app.post('/unsubscribe', unsubscribe)
 app.post('/stops', getStop)
 
-app.get('/debug-sentry', function mainHandler(req, res) {
+app.get('/debug-sentry', () => {
   throw new Error('My first Sentry error!')
 })
 

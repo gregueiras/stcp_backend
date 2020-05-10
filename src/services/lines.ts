@@ -4,23 +4,13 @@ import * as Sentry from '@sentry/node'
 
 import { parse, HTMLElement } from 'node-html-parser'
 
-import { updateClient } from '../clients/clients'
-import { cleanTime } from '../auxFunctions'
-import { Line, ClientEntry } from '../types'
+import { updateClient } from 'src/clients/clients'
+import { cleanTime, getCode } from 'src/auxFunctions'
+import { Line, ClientEntry } from 'src/types'
 import CacheService from './cache'
 
 const ttl = 30 // cache for 30 seconds
 const cache = new CacheService(ttl) // Create a new cache service instance
-
-export async function getLines(providerTemp: string, code: string) {
-  const provider = providerTemp.replace(/ /g, '+').toUpperCase()
-  const stop = code.replace(/ /g, '+')
-
-  const key = `${provider}_${stop}`
-  Sentry.captureMessage(`New Line Request for ${provider}-${code}`)
-
-  return await cache.get(key, () => loadLines(provider, stop))
-}
 
 async function loadLines(provider: string, stop: string): Promise<Line[]> {
   try {
@@ -104,4 +94,14 @@ export async function handleStop(
   })
 
   updateClient(provider, code, newData)
+}
+
+export async function getLines(providerTemp: string, codeTemp: string): Promise<Line[]> {
+  const provider = providerTemp.replace(/ /g, '+').toUpperCase()
+  const code = codeTemp.replace(/ /g, '+')
+
+  const key = getCode(provider, code)
+  Sentry.captureMessage(`New Line Request for ${provider}-${code}`)
+
+  return await cache.get(key, () => loadLines(provider, code))
 }
