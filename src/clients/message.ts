@@ -1,5 +1,5 @@
 import Expo, { ExpoPushMessage } from 'expo-server-sdk'
-import { Line } from 'src/types'
+import { Line } from '~/types'
 
 function sendMessage(token: string, lines: Line[], code: string, expo: Expo): void {
   if (!Expo.isExpoPushToken(token)) {

@@ -4,9 +4,9 @@ import * as Sentry from '@sentry/node'
 
 import { parse, HTMLElement } from 'node-html-parser'
 
-import { updateClient } from 'src/clients/clients'
-import { cleanTime, getCode } from 'src/auxFunctions'
-import { Line, ClientEntry } from 'src/types'
+import { updateClient } from '~/clients/clients'
+import { cleanTime, getCode } from '~/auxFunctions'
+import { Line, ClientEntry } from '~/types'
 import CacheService from './cache'
 
 const ttl = 30 // cache for 30 seconds
@@ -48,7 +48,7 @@ async function loadLines(provider: string, stop: string): Promise<Line[]> {
         .reduce((acc, currVal) => ({ ...acc, ...currVal })),
     )
 
-    return lines
+    return lines as Line[]
   } catch (error) {
     console.log('ERROR')
     Sentry.captureException(error)

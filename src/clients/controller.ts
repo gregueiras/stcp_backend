@@ -1,7 +1,7 @@
 import { addClient, removeClient } from './clients'
 import * as Express from 'express'
-import { Request } from 'src/types'
-import { getCode } from 'src/auxFunctions'
+import { Request } from '~/types'
+import { getCode } from '~/auxFunctions'
 
 export const unsubscribe = (req: Express.Request, res: Express.Response): void => {
   const { token, code, provider } = req.body as Request

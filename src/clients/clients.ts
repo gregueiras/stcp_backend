@@ -1,8 +1,8 @@
 import prettyjson from 'prettyjson'
-import { getCode } from 'src/auxFunctions'
-import { ClientEntry, Request } from 'src/types'
+import { getCode } from '~/auxFunctions'
+import { ClientEntry, Request } from '~/types'
 import { sendMessage } from './message'
-import { handleStop } from 'src/services/lines'
+import { handleStop } from '~/services/lines'
 import * as Sentry from '@sentry/node'
 import Expo from 'expo-server-sdk'
 
