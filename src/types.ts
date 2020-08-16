@@ -16,3 +16,8 @@ export interface ClientEntry {
   token: string
   lines: Line[]
 }
+
+export interface APIEntry {
+    Key: number,
+    Value: string[]
+}
