@@ -3,6 +3,7 @@
     "module": "commonjs",
     "esModuleInterop": true,
     "target": "es6",
+    "removeComments": true,
     "noImplicitAny": true,
     "moduleResolution": "node",
     "outDir": "build",
@@ -15,5 +16,6 @@
     "inlineSources": true,
     "sourceRoot": "/"
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
 }
