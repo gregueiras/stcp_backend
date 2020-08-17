@@ -14,22 +14,44 @@ const cache = new CacheService(ttl) // Create a new cache service instance
 
 async function loadLines(providerName: string, stop: string): Promise<Line[]> {
     try {
+        // Load the page to retrieve the correct tokens/headers
+        const url = 'http://www.move-me.mobi/NextArrivals'
+        const searchURL = `${url}/Search`
+        const lineURL = `${url}/GetScheds`
+
+        const init = await axios({
+            method: "GET",
+            url: searchURL,
+        })
+
+        const regex = /^.*?;/
+        const tokenRegex = /(\<form action=\"\/NextArrivals\/Search\" id=\"__AjaxAntiForgeryForm\" method=\"post\"\>\<input name=\"__RequestVerificationToken\" type=\"hidden\" value=\")(.*?)" /
+
+        const token = tokenRegex.exec(init.data)[2]
+
+        const cookies = init.headers["set-cookie"].map((header: string) => 
+            regex.exec(header)[0]
+        ).reduce((unique: string[], item:string) =>  
+            unique.includes(item) ? unique : [...unique, item],
+            []
+        ).join(
+            " "
+        ).slice(0, -1)
 
         const stopCode = `${providerName}_${stop}`
 
         const headers = {
-            'Perda': 'de Tempo',
-            '__RequestVerificationToken': 'JRqFPQew1Lx4thDU7cjZ27nL4SE6-SWhc3vv9F_oh71-hw86WkfjtuuPWV0i2SaM_M3J5RHmNKzXTidZWxhrbYkvNRnmucywh8yftB_2vXFsdH6H0brSjO_wHRzAYQw9x0dRN0yhyAYdNLOPKWh_b6tXN-iDhQaqZtRoRPdFLjc1',
+            'perda': 'de Tempo',
+            '__RequestVerificationToken': token,
             'Content-Type': 'application/json',
             'Origin': 'http://www.move-me.mobi',
-            'Referer': 'http://www.move-me.mobi/NextArrivals/Search',
-            'Cookie': 'ASP.NET_SessionId=mbhg35wzzvwi5wduybayctfj; __RequestVerificationToken=FhTs2cc4vcIWqQxfQwv2dMVN0F_hoTzxY0CPyOSGhSYc0m_JeDU3_NsOIiHJMmGAbrWtjpVFSyuWeZnE0IobrEABCX-xH0om3DWbxmSRBh15CQoYrP7bmwM3CHib7T7Tlwt2J_3-cLBxfgE5wI4G7g2'
+            'Referer': lineURL,
+            'Cookie': cookies
         };
 
-        const searchUrl = 'http://www.move-me.mobi/NextArrivals/GetScheds'
         const response = await axios({
             method: "POST",
-            url: searchUrl,
+            url: lineURL,
             data: { providerName, stopCode },
             headers,
         })
@@ -50,7 +72,8 @@ async function loadLines(providerName: string, stop: string): Promise<Line[]> {
     } catch (error) {
         console.log('ERROR')
         Sentry.captureException(error)
-        console.log(error)
+        console.log(error.response.status)
+        console.log(error.response.statusText)
     }
     /**
      * 
