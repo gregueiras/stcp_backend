@@ -8,10 +8,12 @@
   "dependencies": {
     "@sentry/node": "5.15.5",
     "axios": "^0.19.2",
+    "chakram": "^1.5.0",
     "dotenv": "^8.2.0",
     "expo-server-sdk": "^3.5.0",
     "express": "^4.17.1",
     "link-module-alias": "^1.2.0",
+    "mocha": "^8.1.1",
     "node-cache": "^5.1.0",
     "node-html-parser": "^1.2.16",
     "prettyjson": "^1.2.1"
@@ -22,7 +24,8 @@
     "postinstall": "yarn build",
     "lint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
     "go": "yarn build && yarn start",
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "test": "mocha src/tests/**.test.js"
   },
   "_moduleAliases": {
     "~": "build"
