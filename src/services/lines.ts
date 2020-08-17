@@ -2,8 +2,6 @@ import * as Expo from 'expo-server-sdk'
 import axios from 'axios'
 import * as Sentry from '@sentry/node'
 
-import { parse, HTMLElement } from 'node-html-parser'
-
 import { updateClient } from '~/clients/clients'
 import { cleanTime, getCode } from '~/auxFunctions'
 import { Line, ClientEntry, APIEntry } from '~/types'
